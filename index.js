@@ -30,6 +30,19 @@ class Blockchain {
         newBLock.hash = newBLock.calculateHash();
         this.chain.push(newBLock);
     }
+    isBlockchinValid(){
+        for(let i = 1; i < this.chain.length; i++){
+            const currentBLock = this.chain[i];
+            const previousBLock = this.chain[i - 1];
+            if(currentBLock.hash !== currentBLock.calculateHash()){
+                return false;
+            }
+            if(currentBLock.previousHash !== previousBLock.hash){
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 const josscoin = new Blockchain();
@@ -37,5 +50,9 @@ const josscoin = new Blockchain();
 const block = new Block("2019-01-01",{amount: 5});
 josscoin.addBlock(block);
 
+console.log(josscoin.isBlockchinValid());
 
+josscoin.chain[1].data = "hacked";
+
+console.log(josscoin.isBlockchinValid());
 console.log(josscoin);
