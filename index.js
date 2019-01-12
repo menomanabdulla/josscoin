@@ -38,6 +38,7 @@ class Blockchain {
         this.difficulty = 2;
 
         this.pendingTransactions = [];
+        this.minigReward = 10;
     }
 
     generateGenesisBlock(){
@@ -52,11 +53,13 @@ class Blockchain {
         this.pendingTransactions.push(transaction);
     }
 
-    minePendingTransactions(){
+    minePendingTransactions(minerAddress){
         let block = new Block(Date.now(), this.pendingTransactions);
         block.mineBLock(this.difficulty);
         this.chain.push(block);
-        this.pendingTransactions = [];
+        this.pendingTransactions = [
+            new Transaction(null,minerAddress, this.minigReward)
+        ];
     }
 
     /*addBlock(newBLock){
@@ -97,8 +100,8 @@ class Blockchain {
 const josscoin = new Blockchain();
 josscoin.createTransaction(new Transaction('address1','address2',100));
 josscoin.createTransaction(new Transaction('address2','address1',50));
-josscoin.minePendingTransactions();
 
-console.log(josscoin.getBalanceOfAddress('address1'));
-console.log(josscoin.getBalanceOfAddress('address2'));
-//console.log(josscoin);
+josscoin.minePendingTransactions("nowshad-address");
+console.log(josscoin.getBalanceOfAddress('nowshad-address'));
+josscoin.minePendingTransactions("nowshad-address");
+console.log(josscoin.getBalanceOfAddress('nowshad-address'));
