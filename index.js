@@ -1,4 +1,7 @@
 const sha26 = require('crypto-js/sha256');
+const EC = require('elliptic').ec;
+var ec = new EC('secp256k1');
+
 
 class Block{
     constructor(timestamp,transactions,previousHash = ''){
@@ -22,6 +25,15 @@ class Block{
             JSON.stringify(this.transactions) + 
             this.previousHash + this.nonce).toString();
     }
+
+    hasValidTransaction(){
+        for(const tx of this.transactions){
+            if(!tx.isValid()){
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 class Transaction{
@@ -29,6 +41,29 @@ class Transaction{
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
         this.amount  =  amount;
+    }
+    calculateHash(){
+        return sha256(
+            this.fromAddress + 
+            this.toAddress + 
+            this.amount
+        ).toString();
+    }
+    signTransaction(key){
+        if(key.getPublic('hex' !== this.amount)){
+            throw new Error("You do not have access");
+        }
+        const hashTx = this.calculateHash();
+        const signature = key.sign(hashTx, 'base64');
+        this.signature = signature.toDer();
+    }
+    isValid(){
+        if(this.fromAddress === null) true;
+        if(!this.signature || this.signature.length === 0){
+            throw new Error("No signature found");
+        }
+        const key = ec.keyFromPublic(this.fromAddress,'hex');
+        return key.verify(this.calculateHash(), this.signature);
     }
 }
 
@@ -49,7 +84,13 @@ class Blockchain {
         return this.chain[this.chain.length-1];
     }
 
-    createTransaction(transaction){
+    addTransaction(transaction){
+        if(!transaction.fromAddress || !transaction.toAddress){
+            throw new Error("Cannot process transaction");
+        }
+        if(!transaction.isValid()){
+            throw new Error("Invalid transaction");
+        }
         this.pendingTransactions.push(transaction);
     }
 
@@ -77,6 +118,9 @@ class Blockchain {
             if(currentBLock.previousHash !== previousBLock.hash){
                 return false;
             }
+            if(!currentBLock.hasValidTransaction()){
+                return false;
+            }
         }
         return true;
     }
@@ -97,11 +141,10 @@ class Blockchain {
     }
 }
 
-const josscoin = new Blockchain();
-josscoin.createTransaction(new Transaction('address1','address2',100));
-josscoin.createTransaction(new Transaction('address2','address1',50));
+//const josscoian = new Blockchain();
 
-josscoin.minePendingTransactions("nowshad-address");
-console.log(josscoin.getBalanceOfAddress('nowshad-address'));
-josscoin.minePendingTransactions("nowshad-address");
-console.log(josscoin.getBalanceOfAddress('nowshad-address'));
+module.exports = {
+    Block,
+    Transaction,
+    Blockchain
+}
