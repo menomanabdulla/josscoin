@@ -1,4 +1,4 @@
-const sha26 = require('crypto-js/sha256');
+const sha256 = require('crypto-js/sha256');
 const EC = require('elliptic').ec;
 var ec = new EC('secp256k1');
 
@@ -21,7 +21,7 @@ class Block{
     }
 
     calculateHash(){
-        return sha26(this.timestamp + 
+        return sha256(this.timestamp + 
             JSON.stringify(this.transactions) + 
             this.previousHash + this.nonce).toString();
     }
@@ -50,12 +50,12 @@ class Transaction{
         ).toString();
     }
     signTransaction(key){
-        if(key.getPublic('hex' !== this.amount)){
+        if(key.getPublic('hex') !== this.fromAddress){
             throw new Error("You do not have access");
         }
         const hashTx = this.calculateHash();
         const signature = key.sign(hashTx, 'base64');
-        this.signature = signature.toDer();
+        this.signature = signature.toDER();
     }
     isValid(){
         if(this.fromAddress === null) true;
@@ -91,6 +91,14 @@ class Blockchain {
         if(!transaction.isValid()){
             throw new Error("Invalid transaction");
         }
+        if(transaction.amount < 0){
+            throw new Error("Invalid transaction amount");
+        }
+       /*if(transaction.amount > this.getBalanceOfAddress(transaction.fromAddress)){
+            throw new Error("Not enough balance");
+        }
+        */
+
         this.pendingTransactions.push(transaction);
     }
 

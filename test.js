@@ -20,3 +20,11 @@ josscoian.addTransaction(tx1);
 josscoian.minePendingTransactions(walletNumber);
 
 console.log(josscoian.getBalanceOfAddress(walletNumber));
+
+josscoian.minePendingTransactions(walletNumber);
+
+console.log(josscoian.getBalanceOfAddress(walletNumber));
+
+console.log(josscoian.getBalanceOfAddress('randomAddress'));
+
+console.log(josscoian.isBlockchinValid());
