@@ -7,24 +7,38 @@ const EC = require('elliptic').ec;
 var ec = new EC('secp256k1');
 
 //generate key
-const key = ec.genKeyPair();
-const privatKey = key.getPrivate("hex");
-const walletNumber = key.getPublic("hex");
 
+//user1
+const key1 = ec.genKeyPair();
+const privatKey1 = key1.getPrivate("hex");
+const walletNumber1 = key1.getPublic("hex");
 
+//user2
+const key2 = ec.genKeyPair();
+const privatKey2 = key2.getPrivate("hex");
+const walletNumber2 = key2.getPublic("hex");
+
+//create instance
 const josscoian = new Blockchain();
-const tx1 = new Transaction(walletNumber,'randomAddress',100);
-tx1.signTransaction(key);
+
+//transaction 1
+const tx1 = new Transaction(walletNumber1,walletNumber2,100);
+tx1.signTransaction(key1);
 josscoian.addTransaction(tx1);
 
-josscoian.minePendingTransactions(walletNumber);
+//mining1 for transaction 1
+josscoian.minePendingTransactions(walletNumber1);
+console.log(josscoian.getBalanceOfAddress(walletNumber1));
+console.log(josscoian.getBalanceOfAddress(walletNumber2));
 
-console.log(josscoian.getBalanceOfAddress(walletNumber));
+//transaction 2
+const tx2 = new Transaction(walletNumber2,walletNumber1,50);
+tx2.signTransaction(key2);
+josscoian.addTransaction(tx2);
 
-josscoian.minePendingTransactions(walletNumber);
-
-console.log(josscoian.getBalanceOfAddress(walletNumber));
-
-console.log(josscoian.getBalanceOfAddress('randomAddress'));
+//mining2 for transaction 2
+josscoian.minePendingTransactions(walletNumber1);
+console.log(josscoian.getBalanceOfAddress(walletNumber1));
+console.log(josscoian.getBalanceOfAddress(walletNumber2));
 
 console.log(josscoian.isBlockchinValid());
